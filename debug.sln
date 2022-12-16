@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "debug", "debug\debug.csproj", "{3234309D-EB6D-4C0A-9AE1-A8ECB71FFD74}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugExample", "DebugExample\DebugExample.csproj", "{3234309D-EB6D-4C0A-9AE1-A8ECB71FFD74}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "Example\Example.csproj", "{CAE9CA9C-A036-44FE-AA23-9932B4EF0D40}"
 EndProject
