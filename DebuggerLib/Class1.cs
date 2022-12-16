@@ -28,6 +28,13 @@ namespace DebuggerLib
         public string Name;
         public object Value;
 
+        public string ValueDef()
+        {
+            if (Value is IConvertible) return Value.ToString();
+
+            return System.Text.Json.JsonSerializer.Serialize(Value);
+        }
+
         public Var(string name, object value)
         {
             Name = name;

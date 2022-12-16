@@ -57,7 +57,7 @@ namespace DebugExample
             while (true)
             {
                 Console.WriteLine("BreakPoint Hit values");
-                Console.WriteLine(string.Join(", ", variables.Select(v => $"{v.Name}: {v.Value}")));
+                Console.WriteLine(string.Join(", ", variables.Select(v => $"{v.Name}: {v.ValueDef()}")));
                 PrintStatementOptions();
                 Console.WriteLine("1 remove all break points");
                 Console.WriteLine("2 add/remove break point");
