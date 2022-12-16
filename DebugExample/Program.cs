@@ -68,7 +68,10 @@ namespace DebugExample
                 switch (answer)
                 {
                     case 1:
-                        DebugHelper.BreakPoints.Clear();
+                        foreach (var e in DebugHelper.BreakPoints)
+                        {
+                            DebugHelper.BreakPoints[e.Key] = false;
+                        }
                         continue;
                     case 2:
 
