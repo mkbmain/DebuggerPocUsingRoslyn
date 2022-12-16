@@ -47,7 +47,7 @@ namespace DebugExample
 
             // Calls the Main method.
             var entryPoint = assembly.EntryPoint;
-            entryPoint?.Invoke(null, new object[] {new string[0]});
+            entryPoint?.Invoke(null, new object[] {Array.Empty<string>()});
 
             Console.Read();
         }
