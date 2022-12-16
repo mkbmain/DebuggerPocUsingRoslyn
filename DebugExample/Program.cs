@@ -12,12 +12,12 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using DebugStatement = System.ValueTuple<Microsoft.CodeAnalysis.CSharp.Syntax.StatementSyntax, string[]>;
 
-namespace debug
+namespace DebugExample
 {
     class Program
     {
-        private static IEnumerable<MetadataReference> References() => ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))
-            .Split(Path.PathSeparator).Select(refs => MetadataReference.CreateFromFile(refs)).Cast<MetadataReference>().ToList();
+        private static IEnumerable<MetadataReference> References() => ((string) AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))
+            ?.Split(Path.PathSeparator).Select(refs => MetadataReference.CreateFromFile(refs)).Cast<MetadataReference>().ToList();
 
 
         private const string SourcePath = "../../../../Example/Program.cs";
@@ -27,7 +27,7 @@ namespace debug
             Run();
         }
 
-        static Dictionary<int, string> statments = new Dictionary<int, string>();
+        private static Dictionary<int, string> _statements = new Dictionary<int, string>();
 
         public static void Run()
         {
@@ -35,35 +35,37 @@ namespace debug
             var sourceCode = File.ReadAllText(SourcePath);
             var (assembly, statmentIndexes) = Build(sourceCode);
 
-            statments = statmentIndexes.GroupBy(x => x.Item1).ToDictionary(x => x.Key, x => x.First().Item2);
-            DebugHelper.BreakPoints = statments.Select(x => x.Key).ToDictionary(x => x, t => false);
-            DebugMenu(Array.Empty<Var>(), sourceCode);
+            _statements = statmentIndexes.GroupBy(x => x.Item1).ToDictionary(x => x.Key, x => x.First().Item2);
+            DebugHelper.BreakPoints = _statements.Select(x => x.Key).ToDictionary(x => x, t => false);
+            DebugMenu(Array.Empty<Var>());
 
             DebugHelper.BreakPointHit += (spanStart, spanLength, variables) =>
             {
-                DebugMenu(variables, sourceCode);
+                DebugMenu(variables);
                 DebugHelper.Lock = false;
             };
 
             // Calls the Main method.
             var entryPoint = assembly.EntryPoint;
-            entryPoint.Invoke(null, new object[] { new string[0] });
+            entryPoint?.Invoke(null, new object[] {new string[0]});
 
             Console.Read();
         }
 
-        private static void DebugMenu(Var[] variables, string source)
+        private static void DebugMenu(Var[] variables)
         {
             while (true)
             {
                 Console.WriteLine("BreakPoint Hit values");
                 Console.WriteLine(string.Join(", ", variables.Select(v => $"{v.Name}: {v.Value}")));
-                PrintStatmentOptions();
+                PrintStatementOptions();
                 Console.WriteLine("1 remove all break points");
                 Console.WriteLine("2 add/remove break point");
                 Console.WriteLine("3 continue");
-                var line = Console.ReadLine();
-                switch (int.Parse(line))
+                var readLine = Console.ReadLine();
+                if (!int.TryParse(readLine, out var answer)) continue;
+
+                switch (answer)
                 {
                     case 1:
                         DebugHelper.BreakPoints.Clear();
@@ -77,17 +79,16 @@ namespace debug
                     case 3:
                         return;
                 }
-
             }
         }
 
-        private static void PrintStatmentOptions()
+        private static void PrintStatementOptions()
         {
             Console.WriteLine(Environment.NewLine);
             Console.WriteLine($"Index\tBreakPointSet\tCode");
             foreach (var items in DebugHelper.BreakPoints)
             {
-                Console.WriteLine($"{items.Key}\t{items.Value}\t{statments[items.Key]}");
+                Console.WriteLine($"{items.Key}\t{items.Value}\t{_statements[items.Key]}");
             }
         }
 
@@ -97,9 +98,9 @@ namespace debug
             {
                 Console.Write("what Index:");
                 var sourceLine = Console.ReadLine();
-                if (!int.TryParse(sourceLine, out var index) || !statments.ContainsKey(index))
+                if (!int.TryParse(sourceLine, out var index) || !_statements.ContainsKey(index))
                 {
-                    PrintStatmentOptions();
+                    PrintStatementOptions();
                     continue;
                 }
 
@@ -118,7 +119,7 @@ namespace debug
 
             var compilation = CSharpCompilation.Create(
                 assemblyName,
-                syntaxTrees: new[] { syntaxTree },
+                syntaxTrees: new[] {syntaxTree},
                 references: References(),
                 options: new CSharpCompilationOptions(OutputKind.ConsoleApplication));
 
@@ -144,10 +145,11 @@ namespace debug
 
                 ms.Close();
             }
-            return (assembly, indexesOfStatments);
 
+            return (assembly, indexesOfStatments);
         }
     }
+
     public static class SyntaxHelper
     {
         public static (string code, List<(int, string)> indexesOfStatments) InsertBreakpoints(string sourceCode)
@@ -175,6 +177,7 @@ namespace debug
                     if (sourceCode[i] == '\n') lineOfIndex++;
                     if (i == span.Start) break;
                 }
+
                 indexesOfStatments.Add((span.Start, linesOfSource[lineOfIndex]));
             }
 
@@ -260,5 +263,4 @@ namespace debug
         static string ToDictionaryText(string[] variables) =>
             $"new Dictionary<string, object> {{ {string.Join(", ", variables.Select(v => $"{{ \"{v}\", {v} }}"))} }}";
     }
-
 }
